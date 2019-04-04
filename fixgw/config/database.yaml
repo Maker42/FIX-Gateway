@@ -674,3 +674,12 @@ entries:
   max: 100000.0
   units: Hours
   initial: 0.0
+
+- key: ROT
+  description: Rate of Turn (degrees per second)
+  type: float
+  min: -300.0
+  max: 300.0
+  tol: 2000
+  units: DPS
+  initial: 0.0

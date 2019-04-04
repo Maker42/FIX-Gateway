@@ -37,28 +37,34 @@ class MainThread(threading.Thread):
         self.log = parent.log
         self.config = parent.config
         rais_server_module = importlib.import_module(self.config['rais_server_module'])
-        cfg = None
-        if 'rais_config_path' in self.config:
-            cfg = self.config['rais_config_path']
-        self.rais = rais_server_module.RAIS(config_file=cfg)
+        starting_port = self.config['starting_port']
+        cfg = self.config['rais_config_path']
+        self.rais = rais_server_module.RAIS(starting_port, config_file=cfg)
         self.rais.setParameterCallback (self.callback)
-        self.baro_publisher = rais_server_module.GivenBarometer(self.rais.pubsub_config)
+        self.bad_threshold = 5.0 if 'bad_threshold' not in self.config \
+                    else self.config['bad_threshold']
+        self.fail_threshold = 2.0 if 'fail_threshold' not in self.config \
+                    else self.config['fail_threshold']
 
     def baro_changed(self, key, value, udata):
         assert(key == "BARO")
         try:
-            self.baro_publisher.send(value[0])
+            self.rais.GivenBarometer(value[0])
         except:
             pass
 
     def run(self):
         callback_add("", "BARO", self.baro_changed, "")
         while not self.getout:
-            self.rais.listen (loop=False, timeout=0)
-            time.sleep(.1)
+            self.rais.listen (loop=False, timeout=0.1)
 
-    def callback(self, dbkey, value):
-            self.parent.db_write(dbkey, value)
+    def callback(self, dbkey, value, conf):
+        i = self.parent.db_get_item(dbkey)
+        bad = True if conf < self.bad_threshold else False
+        fail = True if conf < self.fail_threshold else False
+        i.value = value
+        i.bad = bad
+        i.fail = fail
 
     def stop(self):
         self.getout = True

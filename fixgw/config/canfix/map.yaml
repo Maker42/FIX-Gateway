@@ -69,6 +69,7 @@ inputs:
   - { canid: 0x50E, index: 0, fixid: "VOLT", priority: 0 }
   - { canid: 0x512, index: 0, fixid: "CURRNT", priority: 0 }
   - { canid: 0x406, index: 0, fixid: "OAT", priority: 0 }
+  - { canid: 0x403, index: 0, fixid: "ROT", priority: 0 }
 
 
   # Output mappings are for data that is read from the FixGW database and
